@@ -34,7 +34,7 @@ namespace OMSI_RouteAdvisor.Views
         private Brush Passive { get; set; }
         private Brush Bus { get; set; }
         private Dictionary<int, Ellipse> BusStopPositions { get; set; }
-        private Ellipse BusPosition { get; set; }
+        private Ellipse? BusPosition { get; set; }
         private bool _isWindowFixed = false;
         private bool _isGameInjected = false;
         private GameMemoryReader? GameMemoryReader { get; set; }
@@ -224,7 +224,7 @@ namespace OMSI_RouteAdvisor.Views
                 UpdateBusPosition();
                 UpdateNextStop();
 
-                await Task.Delay(1200);
+                await Task.Delay(1000);
             }
         }
 
@@ -233,7 +233,7 @@ namespace OMSI_RouteAdvisor.Views
         /// </summary>
         private void UpdateNextStop()
         {
-            int id = GameMemoryReader.GetNextBusStopId();
+            int id = GameMemoryReader!.GetNextBusStopId();
             if (id == 0 || GameMemoryReader.PreviousBusStopId == id)
                 return;
 
@@ -256,7 +256,7 @@ namespace OMSI_RouteAdvisor.Views
         private void UpdateBusPosition()
         {
             double busX, busY;
-            (busX, busY) = GameMemoryReader.GetCurrentBusPosition(MapData);
+            (busX, busY) = GameMemoryReader!.GetCurrentBusPosition(MapData);
 
             Canvas.SetLeft(BusPosition, busX - 5);
             Canvas.SetTop(BusPosition, busY - 5);

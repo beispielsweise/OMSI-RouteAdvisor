@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 
 namespace OMSI_RouteAdvisor.Readers
 {
@@ -16,9 +17,13 @@ namespace OMSI_RouteAdvisor.Readers
     /// </summary>
     public class GameMemoryReader
     {
-        private MemoryReadingUtilities reader {  get; }
+        private MemoryReadingUtilities reader { get; }
         public int PreviousBusStopId { get; set; }
-
+        private double previousBusX = 0;
+        private double previousBusY = 0;
+        private int filterDifference = 5;
+        private int passThreshold = 3;
+        private int passCounter = 0;
         public GameMemoryReader()
         {
             try
@@ -33,10 +38,10 @@ namespace OMSI_RouteAdvisor.Readers
         }
 
         /// <summary>
-        /// Reads current Bus X and Y and transforms it to local coordinates
+        /// Returns the current x and y bus position, filtered to prevent big jumps.
         /// </summary>
-        /// <param name="mapData">Map Data instance</param>
-        /// <returns>A tuple of X and Y</returns>
+        /// <param name="mapData">Map data instance</param>
+        /// <returns>A tuple of X and Y </returns>
         public (double x, double y) GetCurrentBusPosition(MapData mapData)
         {
             double tileX = reader.ReadFloat(OMSIMemory.BusXB, OMSIMemory.BusXP);
@@ -44,10 +49,27 @@ namespace OMSI_RouteAdvisor.Readers
             int gridX = reader.ReadInt32(OMSIMemory.CurrentTileXB, OMSIMemory.CurrentTileXP);
             int gridY = reader.ReadInt32(OMSIMemory.CurrentTileYB, OMSIMemory.CurrentTileYP);
 
-            double x, y;
-            (x, y) = CoordinatesConverter.XYToLocal(mapData, gridX, gridY, tileX, tileY);
+            double busX, busY;
+            (busX, busY) = CoordinatesConverter.XYToLocal(mapData, gridX, gridY, tileX, tileY);
 
-            return (x, y);
+            if ((busX - previousBusX) > filterDifference && previousBusX != 0 && previousBusY != 0)
+            {
+                passCounter++;
+
+                if (passThreshold > passCounter)
+                {
+                    passCounter = 0;
+                    previousBusX = busX;
+                    previousBusY = busY;
+                    return (busX, busY);
+                }
+
+                return (previousBusX,  previousBusY);
+            }
+
+            previousBusX = busX;
+            previousBusY = busY;
+            return (busX, busY);    
         }
 
         /// <summary>
