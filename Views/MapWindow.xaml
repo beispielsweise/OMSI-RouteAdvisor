@@ -8,10 +8,24 @@
         WindowStyle="None"
         ResizeMode="CanResize"
         Title="MapWindow" Height="450" Width="800">
-    <Grid x:Name="RootGrid" MouseLeftButtonDown="RootGrid_MouseLeftButtonDown">
-        <Canvas x:Name="MapCanvas">
-            <Image x:Name="MapBackground"></Image>
-            <Canvas x:Name="BusStopsLayer" IsHitTestVisible="False"/>
-        </Canvas>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid x:Name="RootGrid" Grid.Row="0" MouseLeftButtonDown="RootGrid_MouseLeftButtonDown">
+            <Canvas x:Name="MapCanvas">
+                <Image x:Name="MapBackground" />
+                <Canvas x:Name="BusStopsLayer" IsHitTestVisible="False" />
+            </Canvas>
+        </Grid>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10" >
+            <CheckBox x:Name="FixWindowPositionButton" Content="Fixed" Click="FixWindowPositionButton_Click" Width="52" Height="16"/>
+            <Slider x:Name="MapZoomSlider" Minimum="0.5" Maximum="2.0" Value="1.0" Width="100" ValueChanged="MapZoomSlider_ValueChanged" Height="18"/>
+            <Button x:Name="CloseMapButton" Content="Close" Click="CloseMapButton_Click" Width="39" Height="25" />
+        </StackPanel>
+
     </Grid>
 </Window>
