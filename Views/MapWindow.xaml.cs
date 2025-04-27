@@ -15,6 +15,8 @@ using System.Windows.Shapes;
 using Brushes = System.Windows.Media.Brushes;
 using Brush = System.Windows.Media.Brush;
 using OMSI_RouteAdvisor.Views.Misc;
+using OMSI_RouteAdvisor.Readers;
+using System.Diagnostics.Eventing.Reader;
 
 namespace OMSI_RouteAdvisor.Views
 {
@@ -26,23 +28,32 @@ namespace OMSI_RouteAdvisor.Views
         public MapData MapData { get; set; }
         private TranslateTransform MoveTransform { get; set; }
         private ScaleTransform ScaleTransform { get; set; }
+        double _zoom = 0;
+
         private Brush Active { get; set; }
         private Brush Passive { get; set; }
+        private Brush Bus { get; set; }
         private Dictionary<int, Ellipse> BusStopPositions { get; set; }
+        private Ellipse BusPosition { get; set; }
         private bool _isWindowFixed = false;
+        private bool _isGameInjected = false;
+        private GameMemoryReader? GameMemoryReader { get; set; }
 
         public MapWindow(string mapFolderPath)
         {
             InitializeComponent();
 
             MapData = new(mapFolderPath);
-            Active = Brushes.Green;
-            Passive = Brushes.Red;
+            Active = Brushes.Red;
+            Passive = Brushes.Green;
+            Bus = Brushes.Blue;
             BusStopPositions = new Dictionary<int, Ellipse>();
 
             LoadMapBmp();
             DrawBusStops();
             
+            MoveTransform = new TranslateTransform();
+            ScaleTransform = new ScaleTransform();
             // Empty for now
             SetupMapMovement();
         }
@@ -66,12 +77,11 @@ namespace OMSI_RouteAdvisor.Views
         {
             foreach (KeyValuePair<int, BusStop> busStop in MapData.BusStops)
             {
-                // Example: drawing one bus stop manually
                 Ellipse busStopCircle = new()
                 {
                     Width = 10,
                     Height = 10,
-                    Stroke = Active,       
+                    Stroke = Passive,       
                     StrokeThickness = 2,
                     Fill = Brushes.Transparent                   
                 };
@@ -82,6 +92,21 @@ namespace OMSI_RouteAdvisor.Views
                 BusStopsLayer.Children.Add(busStopCircle);
                 BusStopPositions.Add(busStop.Key, busStopCircle);
             }
+
+            Ellipse busCircle = new()
+            {
+                Width = 8,
+                Height = 8,
+                Stroke = Bus,
+                StrokeThickness = 2,
+                Fill = Bus 
+            };
+
+            Canvas.SetLeft(busCircle, 10000); // Spawn bus circle out of bounds
+            Canvas.SetTop(busCircle, 10000);
+
+            BusStopsLayer.Children.Add(busCircle);
+            BusPosition = busCircle;
         }
 
         /// <summary>
@@ -90,6 +115,7 @@ namespace OMSI_RouteAdvisor.Views
         private void SetupMapMovement()
         {
             ScaleTransform = new ScaleTransform(1.0, 1.0);
+            _zoom = ScaleTransform.ScaleX;
             MoveTransform = new TranslateTransform();
 
             TransformGroup group = new TransformGroup();
@@ -110,6 +136,7 @@ namespace OMSI_RouteAdvisor.Views
             {
                 ScaleTransform.ScaleX = MapZoomSlider.Value;
                 ScaleTransform.ScaleY = MapZoomSlider.Value;
+                _zoom = ScaleTransform.ScaleX;
             }
         }
 
@@ -118,7 +145,7 @@ namespace OMSI_RouteAdvisor.Views
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void FixWindowPositionButton_Click(object sender, RoutedEventArgs e)
+        private void FixWindowPositionCheckbox_Click(object sender, RoutedEventArgs e)
         {
             _isWindowFixed = !_isWindowFixed;
 
@@ -132,6 +159,35 @@ namespace OMSI_RouteAdvisor.Views
                 ChangeWindowZ.RevertTopmost(this);
             }
         }
+        
+        /// <summary>
+        /// Changes the inject state, which activates reading from Game memory
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void InjectGameCheckbox_Click(object sender, RoutedEventArgs e)
+        {
+            _isGameInjected = !_isGameInjected;
+
+            if (_isGameInjected)
+            {
+                try
+                {
+                    GameMemoryReader = new GameMemoryReader();
+                } catch
+                {
+                    System.Windows.MessageBox.Show("Please open the game before injecting.\nIf you still see the error, open an issue on github please",
+                        "Warning",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error);
+                    _isGameInjected = false;
+                    InjectGameCheckbox.IsChecked = false;
+                    return;
+                }
+
+                StartUpdateLoop();
+            }
+        }
 
         /// <summary>
         /// Closes the Map and returns to the <c>MainWindow</c>
@@ -140,21 +196,11 @@ namespace OMSI_RouteAdvisor.Views
         /// <param name="e"></param>
         private void CloseMapButton_Click(object sender, RoutedEventArgs e)
         {
+            _isGameInjected = false;
+
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
             this.Close();
-        }
-
-        /// <summary>
-        /// CentersMap on a given coordinate
-        /// </summary>
-        private void CenterMap(double x, double y)
-        {
-            double centerX = (MapBackground.Width * ScaleTransform.ScaleX) / 2.0;
-            double centerY = (MapBackground.Height * ScaleTransform.ScaleY) / 2.0;
-
-            MoveTransform.X = -(centerX - (this.ActualWidth / 2.0));
-            MoveTransform.Y = -(centerY - ((this.ActualHeight - FixWindowPositionButton.ActualHeight) / 2.0));
         }
 
         /// <summary>
@@ -166,6 +212,65 @@ namespace OMSI_RouteAdvisor.Views
         {
             if (e.ButtonState == MouseButtonState.Pressed && !_isWindowFixed)
                 this.DragMove();
+        }
+
+        /// <summary>
+        /// Starts Update loop to read the Game Memory
+        /// </summary>
+        private async void StartUpdateLoop()
+        {
+            while (_isGameInjected)
+            {
+                UpdateBusPosition();
+                UpdateNextStop();
+
+                await Task.Delay(1200);
+            }
+        }
+
+        /// <summary>
+        /// Updates Next Stop position
+        /// </summary>
+        private void UpdateNextStop()
+        {
+            int id = GameMemoryReader.GetNextBusStopId();
+            if (id == 0 || GameMemoryReader.PreviousBusStopId == id)
+                return;
+
+            BusStopPositions[id].Stroke = Active;
+            BusStopPositions[id].Fill = Active;
+
+            try
+            {
+                BusStopPositions[GameMemoryReader.PreviousBusStopId].Stroke = Passive;
+                BusStopPositions[GameMemoryReader.PreviousBusStopId].Fill = Brushes.Transparent;
+            }
+            catch { }
+
+            GameMemoryReader.PreviousBusStopId = id;
+        }
+
+        /// <summary>
+        /// Updates current Bus Position
+        /// </summary>
+        private void UpdateBusPosition()
+        {
+            double busX, busY;
+            (busX, busY) = GameMemoryReader.GetCurrentBusPosition(MapData);
+
+            Canvas.SetLeft(BusPosition, busX - 5);
+            Canvas.SetTop(BusPosition, busY - 5);
+
+            CenterMap(busX, busY);
+        }
+
+        /// <summary>
+        /// CentersMap on a given coordinate
+        /// </summary>
+        private void CenterMap(double x, double y)
+        {
+            // MoveTransform.X = -(x * _zoom)- (this.ActualWidth / 2.0);
+            // MoveTransform.Y = -(y * _zoom) - ((this.ActualHeight - FixWindowPositionCheckbox.ActualHeight) / 2.0);
         }
     }
 }

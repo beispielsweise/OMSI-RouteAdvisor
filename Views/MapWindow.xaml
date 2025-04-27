@@ -22,9 +22,10 @@
         </Grid>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10" >
-            <CheckBox x:Name="FixWindowPositionButton" Content="Fixed" Click="FixWindowPositionButton_Click" Width="52" Height="16"/>
+            <CheckBox x:Name="FixWindowPositionCheckbox" Content="Fixed" Click="FixWindowPositionCheckbox_Click" Width="52" Height="16"/>
             <Slider x:Name="MapZoomSlider" Minimum="0.5" Maximum="2.0" Value="1.0" Width="100" ValueChanged="MapZoomSlider_ValueChanged" Height="18"/>
             <Button x:Name="CloseMapButton" Content="Close" Click="CloseMapButton_Click" Width="39" Height="25" />
+            <CheckBox x:Name="InjectGameCheckbox" Content="Inject" Click="InjectGameCheckbox_Click" Height="15" Width="54" Margin="10, 0, 0, 0"></CheckBox>
         </StackPanel>
 
     </Grid>

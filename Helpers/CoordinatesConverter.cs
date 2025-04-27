@@ -60,16 +60,33 @@ namespace OMSI_RouteAdvisor.Helpers
             {
                 Tile parentTile = mapData.Tiles[busStop.Value.ParentTileId];
 
-                // Find offset from the most left/bottom grid to the current 
-                double localX = (parentTile.GridX - (mapData.MinGridX)) * mapData.TileSize + busStop.Value.TileX;
-                double localY = (parentTile.GridY - (mapData.MinGridY)) * mapData.TileSize + busStop.Value.TileY;
-                localY = mapData.WorldHeight - localY; // Game map is inverted
-
-                localX /= mapData.ScaleFactor;
-                localY /= mapData.ScaleFactor;
+                double localX, localY;
+                (localX, localY) = XYToLocal(mapData, parentTile.GridX, parentTile.GridY, busStop.Value.TileX, busStop.Value.TileY);
 
                 busStop.Value.WriteLocalCoordinates(localX, localY);
             }
+        }
+
+        /// <summary>
+        /// Converts X and Y coordinates to Local coordinates for BMP
+        /// </summary>
+        /// <param name="mapData">Current map instance data</param>
+        /// <param name="gridX">Current grid position X</param>
+        /// <param name="gridY">Current grid position Y</param>
+        /// <param name="tileX">Current tile position X</param>
+        /// <param name="tileY">Current tile position Y</param>
+        /// <returns>Converted X and Y tuple</returns>
+        public static (double localX, double localY) XYToLocal(MapData mapData, int gridX, int gridY, double tileX, double tileY)
+        {
+            // Counts offset from left/bottom of the map * 300 + current coordinate
+            double localX = (gridX - (mapData.MinGridX)) * mapData.TileSize + tileX;
+            double localY = (gridY - (mapData.MinGridY)) * mapData.TileSize + tileY;
+            localY = mapData.WorldHeight - localY; // Game map is inverted
+
+            localX /= mapData.ScaleFactor;
+            localY /= mapData.ScaleFactor;
+
+            return (localX, localY);
         }
     }
 }
