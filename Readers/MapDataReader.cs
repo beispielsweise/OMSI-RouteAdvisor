@@ -11,6 +11,10 @@ namespace OMSI_RouteAdvisor.Readers
 {
     class MapDataReader
     {
+        /// <summary>
+        /// Scans global.cfg for all map tiles that are in use
+        /// </summary>
+        /// <param name="mapData"></param>
         public static void ScanGlobalTiles(MapData mapData)
         {
             string[] lines = File.ReadAllLines(mapData.MapFolderPath+ "\\global.cfg");
@@ -29,6 +33,12 @@ namespace OMSI_RouteAdvisor.Readers
             }
         }
 
+        /// <summary>
+        /// Scans for all bus stops that are stored in the tile .map file
+        /// </summary>
+        /// <param name="mapData"></param>
+        /// <param name="tileFilename"></param>
+        /// <param name="parentTileId"></param>
         private static void GetTileBusStops(MapData mapData, string tileFilename, int parentTileId)
         {
             string[] lines;
@@ -64,6 +74,11 @@ namespace OMSI_RouteAdvisor.Readers
             }
         }
 
+        /// <summary>
+        /// Checks if the Map uses RWC (real world coordinates) and decides what the size of a tile should be
+        /// Default: 300 by 300
+        /// </summary>
+        /// <param name="mapData"></param>
         public static void CheckTileSize(MapData mapData)
         {
             string[] lines = File.ReadAllLines(mapData.MapFolderPath + "\\global.cfg");
@@ -88,15 +103,19 @@ namespace OMSI_RouteAdvisor.Readers
             }
         }
 
-        private static double CountTileSizeFromRWC()
+        /// <summary>
+        /// Counts Map tile Size in RWC based on map Latitude
+        /// </summary>
+        /// <param name="mapLatitude">Current map latitude</param>
+        /// <returns>New tile size</returns>
+        private static double CountTileSizeFromRWC(double mapLatitude = 52.5) // TODO: User inputs the latitude
         {
             const double EarthRadius = 6378137.0; // in meters (WGS84)
             const double EarthCircum = 2 * Math.PI * EarthRadius; // Earth's circumference
             const int REAL_TILE_COUNT = 65536; // number of tiles across the world
             const double TILE_DEG = 360.0 / REAL_TILE_COUNT; // degrees of longitude per tile
 
-            double inputLatitude = 52.5; // Example: Berlin-Spandau
-            double latRad = inputLatitude * Math.PI / 180.0;
+            double latRad = mapLatitude * Math.PI / 180.0;
 
             // Meters per degree of longitude at given latitude
             double metersPerDegLon = (EarthCircum / 360.0) * Math.Cos(latRad);

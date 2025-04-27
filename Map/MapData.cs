@@ -9,12 +9,14 @@ using System.Windows.Media.Imaging;
 
 namespace OMSI_RouteAdvisor.Map
 {
+    /// <summary>
+    /// Contains general data of the currently opened map
+    /// </summary>
     public class MapData
     {
         public readonly string MapFolderPath = "";
         public readonly string BmpImagePath = "\\texture\\\\map\\\\whole.roadmap.bmp";
-
-        public BitmapImage BgImg { get; set; }
+        public BitmapImage BackgroundMapImg { get; set; }
         public Dictionary<int, Tile> Tiles { get; set; }
         public Dictionary<int, BusStop> BusStops { get; set; }
         public double TileSize { get; set; }
@@ -24,15 +26,15 @@ namespace OMSI_RouteAdvisor.Map
         public double MaxGridY { get; set; }
         public double WorldWidth { get; set; }
         public double WorldHeight { get; set; }
-        public double ScaleFactor { get; set; }
+        public double ScaleFactor { get; set; } // Difference between Game World width and Local Image width
 
-        // Add incorrect folder check!!!
+        //TODO: Add incorrect folder check!!!
         public MapData(string mapFolderPath)
         {
             MapFolderPath = mapFolderPath;
 
             Tiles = new Dictionary<int, Tile>();
-            BgImg = new BitmapImage(new Uri(this.MapFolderPath + BmpImagePath));
+            BackgroundMapImg = new BitmapImage(new Uri(this.MapFolderPath + BmpImagePath));
             BusStops = new Dictionary<int, BusStop>();
 
             MapDataReader.ScanGlobalTiles(this);

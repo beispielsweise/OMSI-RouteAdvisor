@@ -22,19 +22,21 @@ namespace OMSI_RouteAdvisor.Views
     /// </summary>
     public partial class MapWindow : Window
     {
-        public MapData mapData { get; set; }
-        private TranslateTransform moveTransform = new TranslateTransform();
+        public MapData MapData { get; set; }
+        private TranslateTransform MoveTransform { get; set; }
         private Brush Active { get; set; }
         private Brush Passive { get; set; }
-
+        private Dictionary<int, Ellipse> BusStopPositions { get; set; }
 
         public MapWindow(string mapFolderPath)
         {
             InitializeComponent();
 
-            mapData = new(mapFolderPath);
+            MapData = new(mapFolderPath);
+            MoveTransform = new(); 
             Active = Brushes.Green;
             Passive = Brushes.Red;
+            BusStopPositions = new Dictionary<int, Ellipse>();
 
             LoadMapBmp();
             DrawBusStops();
@@ -43,18 +45,24 @@ namespace OMSI_RouteAdvisor.Views
             SetupMapMovement();
         }
 
+        /// <summary>
+        /// Loads Current Map background image
+        /// </summary>
         private void LoadMapBmp()
         {
-            MapBackground.Source = mapData.BgImg;
-            this.Width = mapData.BgImg.Width;
-            this.Height = mapData.BgImg.Height;
-            MapBackground.Width = mapData.BgImg.Width;
-            MapBackground.Height = mapData.BgImg.Height;
+            MapBackground.Source = MapData.BackgroundMapImg;
+            this.Width = MapData.BackgroundMapImg.Width;
+            this.Height = MapData.BackgroundMapImg.Height;
+            MapBackground.Width = MapData.BackgroundMapImg.Width;
+            MapBackground.Height = MapData.BackgroundMapImg.Height;
         }
 
+        /// <summary>
+        /// Draw all bus stops during initialisation
+        /// </summary>
         private void DrawBusStops()
         {
-            foreach (KeyValuePair<int, BusStop> busStop in mapData.BusStops)
+            foreach (KeyValuePair<int, BusStop> busStop in MapData.BusStops)
             {
                 // Example: drawing one bus stop manually
                 Ellipse busStopCircle = new()
@@ -66,25 +74,30 @@ namespace OMSI_RouteAdvisor.Views
                     Fill = Brushes.Transparent                   
                 };
 
-                Canvas.SetLeft(busStopCircle, busStop.Value.LocalX); 
-                Canvas.SetTop(busStopCircle, busStop.Value.LocalY);
+                Canvas.SetLeft(busStopCircle, busStop.Value.LocalX - 5); // Hardcode to insure more accurate display position
+                Canvas.SetTop(busStopCircle, busStop.Value.LocalY - 5);
 
                 BusStopsLayer.Children.Add(busStopCircle);
+                BusStopPositions.Add(busStop.Key, busStopCircle);
             }
         }
+
+        //
         private void SetupMapMovement()
         {
             // Set up the TranslateTransform for panning
-            MapCanvas.RenderTransform = moveTransform;
+            MapCanvas.RenderTransform = MoveTransform;
         }
 
+        //
         public void CenterMapOnBus(double busPixelX, double busPixelY, double viewportWidth, double viewportHeight)
         {
             // Update map position to center bus
-            moveTransform.X = -busPixelX + (viewportWidth / 2);
-            moveTransform.Y = -busPixelY + (viewportHeight / 2);
+            MoveTransform.X = -busPixelX + (viewportWidth / 2);
+            MoveTransform.Y = -busPixelY + (viewportHeight / 2);
         }
 
+        // Move window on click and hold
         private void RootGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed)

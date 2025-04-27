@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace OMSI_RouteAdvisor.Readers
 {
+    /// <summary>
+    /// Manages live in-game memory reading
+    /// </summary>
     class MemoryReader
     {
         [DllImport("kernel32.dll")]
@@ -20,6 +23,7 @@ namespace OMSI_RouteAdvisor.Readers
         private static IntPtr _omsiHandle = IntPtr.Zero;
         private static IntPtr _omsiBaseAddress = IntPtr.Zero;
 
+        // Memory access adresses for OMSI 2
         // BO - Base offset
         // PO - PointerOffset
         public static readonly int CurrentTileNumberB = 0x0045F584;
@@ -35,6 +39,10 @@ namespace OMSI_RouteAdvisor.Readers
         public static readonly int NextStopIdB = 0x0045F4FC;
         public static readonly int NextStopIdP = 0x6B0;
 
+        /// <summary>
+        /// Initialise MemoryReader instance
+        /// </summary>
+        /// <exception cref="Exception">Process not found</exception>
         public MemoryReader()
         {
             Process omsiProcess = Process.GetProcessesByName("omsi").FirstOrDefault();
@@ -47,6 +55,12 @@ namespace OMSI_RouteAdvisor.Readers
             _omsiBaseAddress = omsiProcess.MainModule.BaseAddress;
         }
 
+        /// <summary>
+        /// Read int value from memory
+        /// </summary>
+        /// <param name="baseOffset">Base offset value (B)</param>
+        /// <param name="pointerOffset">Pointer offset value (P)</param>
+        /// <returns>integer value</returns>
         public int ReadInt32(int baseOffset, int pointerOffset)
         {
             IntPtr address = IntPtr.Add(_omsiBaseAddress, baseOffset);
@@ -61,6 +75,12 @@ namespace OMSI_RouteAdvisor.Readers
             return BitConverter.ToInt32(buffer, 0);
         }
 
+        /// <summary>
+        /// Reads float value from memory
+        /// </summary>
+        /// <param name="baseOffset">Base offset value (B)</param>
+        /// <param name="pointerOffset">Pointer offset value (P)</param>
+        /// <returns>flolat value</returns>
         public float ReadFloat(int baseOffset, int pointerOffset)
         {
             IntPtr address = IntPtr.Add(_omsiBaseAddress, baseOffset);

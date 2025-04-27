@@ -24,6 +24,11 @@ namespace OMSI_RouteAdvisor.Views
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Function calls FolderBrowserDialog and created "MapWindow". 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ChooseMapFolderBtn_Click(object sender, RoutedEventArgs e)
         {
             var dialogFolder = new System.Windows.Forms.FolderBrowserDialog();
