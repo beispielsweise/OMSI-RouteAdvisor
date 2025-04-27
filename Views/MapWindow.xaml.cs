@@ -269,8 +269,8 @@ namespace OMSI_RouteAdvisor.Views
         /// </summary>
         private void CenterMap(double x, double y)
         {
-            // MoveTransform.X = -(x * _zoom)- (this.ActualWidth / 2.0);
-            // MoveTransform.Y = -(y * _zoom) - ((this.ActualHeight - FixWindowPositionCheckbox.ActualHeight) / 2.0);
+            MoveTransform.X = (this.ActualWidth / 2) - (x * _zoom);
+            MoveTransform.Y = (this.ActualHeight / 2) - (y * _zoom);
         }
     }
 }
