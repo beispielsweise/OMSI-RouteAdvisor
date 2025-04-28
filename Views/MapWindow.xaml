@@ -24,7 +24,7 @@
             </Canvas>
         </Grid>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,50" Background="White" >
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,21,0,29" Background="White" >
             <CheckBox x:Name="FixWindowPositionCheckbox" Content="Fixed" Click="FixWindowPositionCheckbox_Click" Width="52" Height="16"/>
             <Slider x:Name="MapZoomSlider" Minimum="0.5" Maximum="2.0" Value="1.0" Width="100" ValueChanged="MapZoomSlider_ValueChanged" Height="18"/>
             <Button x:Name="CloseMapButton" Content="Close" Click="CloseMapButton_Click" Width="39" Height="25" />
@@ -32,7 +32,7 @@
         </StackPanel>
 
         <Grid Grid.Row="2" MouseLeftButtonDown="WindowBorder_MouseLeftButtonDown">
-            <Border x:Name="WindowBorder" BorderBrush="White" VerticalAlignment="Top" BorderThickness="50" CornerRadius="0" Margin="0,40,0,0" Height="36"  Background="Transparent"></Border>
+            <Border x:Name="WindowBorder" BorderBrush="White" VerticalAlignment="Top" BorderThickness="50" CornerRadius="0" Margin="0,48,0,0" Height="28"  Background="Transparent"></Border>
         </Grid>
 
     </Grid>
