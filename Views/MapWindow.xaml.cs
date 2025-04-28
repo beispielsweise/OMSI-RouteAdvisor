@@ -17,6 +17,8 @@ using Brush = System.Windows.Media.Brush;
 using OMSI_RouteAdvisor.Views.Misc;
 using OMSI_RouteAdvisor.Readers;
 using System.Diagnostics.Eventing.Reader;
+using System.Windows.Ink;
+using Rectangle = System.Windows.Shapes.Rectangle;
 
 namespace OMSI_RouteAdvisor.Views
 {
@@ -29,7 +31,6 @@ namespace OMSI_RouteAdvisor.Views
         private TranslateTransform MoveTransform { get; set; }
         private ScaleTransform ScaleTransform { get; set; }
         double _zoom = 0;
-
         private Brush Active { get; set; }
         private Brush Passive { get; set; }
         private Brush Bus { get; set; }
@@ -56,6 +57,9 @@ namespace OMSI_RouteAdvisor.Views
             ScaleTransform = new ScaleTransform();
             // Empty for now
             SetupMapMovement();
+
+            this.Width = 800;
+            this.Height = 800;
         }
 
         /// <summary>
@@ -102,12 +106,13 @@ namespace OMSI_RouteAdvisor.Views
                 Fill = Bus 
             };
 
-            Canvas.SetLeft(busCircle, 10000); // Spawn bus circle out of bounds
-            Canvas.SetTop(busCircle, 10000);
+            Canvas.SetLeft(busCircle, 0); // Spawn bus circle out of bounds
+            Canvas.SetTop(busCircle, 0);
+            busCircle.Visibility = Visibility.Collapsed;
 
             BusStopsLayer.Children.Add(busCircle);
             BusPosition = busCircle;
-        }
+                    }
 
         /// <summary>
         /// Initialises Map movement variables
@@ -152,10 +157,12 @@ namespace OMSI_RouteAdvisor.Views
             if (_isWindowFixed)
             {
                 this.ResizeMode = ResizeMode.NoResize;
+                WindowBorder.BorderThickness = new Thickness(0);
                 ChangeWindowZ.MakeTopmost(this);
             } else
             {
                 this.ResizeMode= ResizeMode.CanResize;
+                WindowBorder.BorderThickness = new Thickness(20);
                 ChangeWindowZ.RevertTopmost(this);
             }
         }
@@ -174,19 +181,26 @@ namespace OMSI_RouteAdvisor.Views
                 try
                 {
                     GameMemoryReader = new GameMemoryReader();
-                } catch
+                }
+                catch
                 {
                     System.Windows.MessageBox.Show("Please open the game before injecting.\nIf you still see the error, open an issue on github please",
                         "Warning",
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
                     _isGameInjected = false;
+                    BusPosition.Visibility = Visibility.Collapsed;
                     InjectGameCheckbox.IsChecked = false;
                     return;
                 }
 
+                BusPosition.Visibility= Visibility.Visible;
                 StartUpdateLoop();
+            } else
+            {
+                BusPosition.Visibility = Visibility.Collapsed;
             }
+                
         }
 
         /// <summary>
@@ -214,6 +228,7 @@ namespace OMSI_RouteAdvisor.Views
                 this.DragMove();
         }
 
+        // TODO: Try separating Updating logic from Window logic
         /// <summary>
         /// Starts Update loop to read the Game Memory
         /// </summary>
@@ -235,6 +250,9 @@ namespace OMSI_RouteAdvisor.Views
         {
             int id = GameMemoryReader!.GetNextBusStopId();
             if (id == 0 || GameMemoryReader.PreviousBusStopId == id)
+                return;
+
+            if (!BusStopPositions.TryGetValue(id, out var _))
                 return;
 
             BusStopPositions[id].Stroke = Active;

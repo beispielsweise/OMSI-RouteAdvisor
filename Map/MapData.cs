@@ -16,7 +16,7 @@ namespace OMSI_RouteAdvisor.Map
     {
         public readonly string MapFolderPath = "";
         public readonly string BmpImagePath = "\\texture\\\\map\\\\whole.roadmap.bmp";
-        public BitmapImage BackgroundMapImg { get; set; }
+        public BitmapSource BackgroundMapImg { get; set; }
         public Dictionary<int, Tile> Tiles { get; set; }
         public Dictionary<int, BusStop> BusStops { get; set; }
         public double TileSize { get; set; }
@@ -34,7 +34,11 @@ namespace OMSI_RouteAdvisor.Map
             MapFolderPath = mapFolderPath;
 
             Tiles = new Dictionary<int, Tile>();
-            BackgroundMapImg = new BitmapImage(new Uri(this.MapFolderPath + BmpImagePath));
+
+            BitmapSource backgroundMapImg = new BitmapImage(new Uri(this.MapFolderPath + BmpImagePath));
+            backgroundMapImg = ImageModifier.MakeTransparent(backgroundMapImg);
+            BackgroundMapImg = backgroundMapImg;
+
             BusStops = new Dictionary<int, BusStop>();
 
             MapDataReader.ScanGlobalTiles(this);
