@@ -10,28 +10,30 @@
         WindowStyle="None"
         ResizeMode="CanResizeWithGrip"
         Title="MapWindow" Height="450" Width="800">
-    <Border x:Name="WindowBorder" BorderBrush="White" BorderThickness="20" CornerRadius="5" Background="Transparent">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
 
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-            <Grid x:Name="RootGrid" Grid.Row="0" MouseLeftButtonDown="RootGrid_MouseLeftButtonDown">
-                <Canvas x:Name="MapCanvas">
-                    <Image x:Name="MapBackground" />
-                    <Canvas x:Name="BusStopsLayer" IsHitTestVisible="False" />
-                </Canvas>
-            </Grid>
-
-            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10" Background="White" >
-                <CheckBox x:Name="FixWindowPositionCheckbox" Content="Fixed" Click="FixWindowPositionCheckbox_Click" Width="52" Height="16"/>
-                <Slider x:Name="MapZoomSlider" Minimum="0.5" Maximum="2.0" Value="1.0" Width="100" ValueChanged="MapZoomSlider_ValueChanged" Height="18"/>
-                <Button x:Name="CloseMapButton" Content="Close" Click="CloseMapButton_Click" Width="39" Height="25" />
-                <CheckBox x:Name="InjectGameCheckbox" Content="Inject" Click="InjectGameCheckbox_Click" Height="15" Width="54" Margin="10, 0, 0, 0"></CheckBox>
-            </StackPanel>
-
+        <Grid x:Name="RootGrid" Grid.Row="0">
+            <Canvas x:Name="MapCanvas">
+                <Image x:Name="MapBackground" />
+                <Canvas x:Name="BusStopsLayer" IsHitTestVisible="False" />
+            </Canvas>
         </Grid>
-    </Border>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,50" Background="White" >
+            <CheckBox x:Name="FixWindowPositionCheckbox" Content="Fixed" Click="FixWindowPositionCheckbox_Click" Width="52" Height="16"/>
+            <Slider x:Name="MapZoomSlider" Minimum="0.5" Maximum="2.0" Value="1.0" Width="100" ValueChanged="MapZoomSlider_ValueChanged" Height="18"/>
+            <Button x:Name="CloseMapButton" Content="Close" Click="CloseMapButton_Click" Width="39" Height="25" />
+            <CheckBox x:Name="InjectGameCheckbox" Content="Inject" Click="InjectGameCheckbox_Click" Height="15" Width="54" Margin="10, 0, 0, 0"></CheckBox>
+        </StackPanel>
+
+        <Grid Grid.Row="2" MouseLeftButtonDown="WindowBorder_MouseLeftButtonDown">
+            <Border x:Name="WindowBorder" BorderBrush="White" VerticalAlignment="Top" BorderThickness="50" CornerRadius="0" Margin="0,40,0,0" Height="36"  Background="Transparent"></Border>
+        </Grid>
+
+    </Grid>
 </Window>

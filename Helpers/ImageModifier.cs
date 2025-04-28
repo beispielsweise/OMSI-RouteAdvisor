@@ -17,10 +17,12 @@ namespace OMSI_RouteAdvisor.Helpers
     public class ImageModifier
     {
         // Pre-defined background image colors that needs to be filtered out
-        private static Color _greenTrees = Color.FromRgb(102, 189, 137);
-        private static Color _greyBG = Color.FromRgb(230, 230, 230);
-        private static Color _blackRR = Color.FromRgb(128, 128, 128);
-        private static Color _blueWater = Color.FromRgb(172, 196, 236);
+        private static readonly Color _greenTrees = Color.FromRgb(102, 189, 137);
+        private static readonly Color _greyBG = Color.FromRgb(230, 230, 230);
+        private static readonly Color _blackRR = Color.FromRgb(128, 128, 128);
+        private static readonly Color _blueWater = Color.FromRgb(172, 196, 236);
+        private static readonly Color _greyRoadOutline = Color.FromRgb(180, 181, 181);
+        private static readonly int _tolerance = 10;
 
         /// <summary>
         /// Filters out unnecessary colors on the background map image, making it transparent
@@ -35,9 +37,6 @@ namespace OMSI_RouteAdvisor.Helpers
             byte[] pixelData = new byte[stride * formatConverted.PixelHeight];
             formatConverted.CopyPixels(pixelData, stride, 0);
 
-            // Threshold (tolerance) - how much error in color is allowed
-            int tolerance = 10;
-
             for (int i = 0; i < pixelData.Length; i += 4)
             {
                 byte b = pixelData[i];
@@ -45,10 +44,11 @@ namespace OMSI_RouteAdvisor.Helpers
                 byte r = pixelData[i + 2];
                 byte a = pixelData[i + 3];
 
-                if (IsColorMatch(r, g, b, _greenTrees, tolerance) ||
-                    IsColorMatch(r, g, b, _greyBG, tolerance) ||
-                    IsColorMatch(r, g, b, _blackRR, tolerance) ||
-                    IsColorMatch(r, g, b, _blueWater, tolerance))
+                if (IsColorMatch(r, g, b, _greenTrees, _tolerance) ||
+                    IsColorMatch(r, g, b, _greyBG, _tolerance) ||
+                    IsColorMatch(r, g, b, _blackRR, _tolerance) ||
+                    IsColorMatch(r, g, b, _blueWater, _tolerance) ||
+                    IsColorMatch(r, g, b, _greyRoadOutline, _tolerance))
                 {
                     pixelData[i + 3] = 0; // Set alpha to 0 (fully transparent)
                 }

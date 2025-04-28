@@ -159,7 +159,20 @@ namespace OMSI_RouteAdvisor.Views.Misc
 
             return (busX, busY);
         }
-       
+
+        /// <summary> 
+        /// Disables the current bus stop highlighting 
+        /// </summary>
+        public void DisableBusStopHighlighting()
+        {
+            try
+            {
+                _busStopPositions[_gameMemoryReader!.PreviousBusStopId].Stroke = _passive;
+                _busStopPositions[_gameMemoryReader.PreviousBusStopId].Fill = Brushes.Transparent;
+            }
+            catch { }
+        }
+
         /// <summary>
         /// Sets Bus circle element visible or invisible
         /// </summary>

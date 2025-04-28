@@ -29,7 +29,7 @@ namespace OMSI_RouteAdvisor.Views
     {
         private MapData _mapData;
         private TranslateTransform _moveTransform;
-        private ScaleTransform ScaleTransform;
+        private ScaleTransform _scaleTransform;
         double _zoom = 0;
         private bool _isWindowFixed = false;
         private bool _isGameInjected = false;
@@ -49,7 +49,7 @@ namespace OMSI_RouteAdvisor.Views
             }
 
             _moveTransform = new TranslateTransform();
-            ScaleTransform = new ScaleTransform();
+            _scaleTransform = new ScaleTransform();
             SetupMapMovement();
 
             this.Width = 800;
@@ -63,12 +63,12 @@ namespace OMSI_RouteAdvisor.Views
         /// </summary>
         private void SetupMapMovement()
         {
-            ScaleTransform = new ScaleTransform(1.0, 1.0);
-            _zoom = ScaleTransform.ScaleX;
+            _scaleTransform = new ScaleTransform(1.0, 1.0);
+            _zoom = _scaleTransform.ScaleX;
             _moveTransform = new TranslateTransform();
 
             TransformGroup group = new TransformGroup();
-            group.Children.Add(ScaleTransform);
+            group.Children.Add(_scaleTransform);
             group.Children.Add(_moveTransform);
 
             MapCanvas.RenderTransform = group;
@@ -81,11 +81,11 @@ namespace OMSI_RouteAdvisor.Views
         /// <param name="e"></param>
         private void MapZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if (ScaleTransform != null)
+            if (_scaleTransform != null)
             {
-                ScaleTransform.ScaleX = MapZoomSlider.Value;
-                ScaleTransform.ScaleY = MapZoomSlider.Value;
-                _zoom = ScaleTransform.ScaleX;
+                _scaleTransform.ScaleX = MapZoomSlider.Value;
+                _scaleTransform.ScaleY = MapZoomSlider.Value;
+                _zoom = _scaleTransform.ScaleX;
             }
         }
 
@@ -142,6 +142,7 @@ namespace OMSI_RouteAdvisor.Views
                 StartUpdateLoop();
             } else
             {
+                _mapRenderer.DisableBusStopHighlighting();
                 _mapRenderer.SetBusPositionVisible(false);
             }
                 
@@ -166,7 +167,7 @@ namespace OMSI_RouteAdvisor.Views
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void RootGrid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        private void WindowBorder_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ButtonState == MouseButtonState.Pressed && !_isWindowFixed)
                 this.DragMove();
