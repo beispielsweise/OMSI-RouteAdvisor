@@ -15,7 +15,7 @@ namespace OMSI_RouteAdvisor.Map
     public class MapData
     {
         public readonly string MapFolderPath = "";
-        public readonly string BmpImagePath = "\\texture\\\\map\\\\whole.roadmap.bmp";
+        private readonly string _bmpImagePath = "\\texture\\\\map\\\\whole.roadmap.bmp";
         public BitmapSource BackgroundMapImg { get; set; }
         public Dictionary<int, Tile> Tiles { get; set; }
         public Dictionary<int, BusStop> BusStops { get; set; }
@@ -28,14 +28,20 @@ namespace OMSI_RouteAdvisor.Map
         public double WorldHeight { get; set; }
         public double ScaleFactor { get; set; } // Difference between Game World width and Local Image width
 
-        //TODO: Add incorrect folder check!!!
         public MapData(string mapFolderPath)
         {
             MapFolderPath = mapFolderPath;
 
             Tiles = new Dictionary<int, Tile>();
 
-            BitmapSource backgroundMapImg = new BitmapImage(new Uri(this.MapFolderPath + BmpImagePath));
+            BitmapSource backgroundMapImg;
+            try
+            {
+                backgroundMapImg = new BitmapImage(new Uri(this.MapFolderPath + _bmpImagePath));
+            } catch
+            {
+                throw new Exception("No wholemap image");
+            }
             backgroundMapImg = ImageModifier.MakeTransparent(backgroundMapImg);
             BackgroundMapImg = backgroundMapImg;
 

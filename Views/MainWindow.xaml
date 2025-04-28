@@ -5,10 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:OMSI_RouteAdvisor.Views"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="120" Width="220">
     <Grid>
         <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <Button x:Name="ChooseMapFolderBtn" Content="Choose map folder" Click="ChooseMapFolderBtn_Click"></Button>
-        </StackPanel> 
+        </StackPanel>
     </Grid>
 </Window>

@@ -27,92 +27,36 @@ namespace OMSI_RouteAdvisor.Views
     /// </summary>
     public partial class MapWindow : Window
     {
-        public MapData MapData { get; set; }
-        private TranslateTransform MoveTransform { get; set; }
-        private ScaleTransform ScaleTransform { get; set; }
+        private MapData _mapData;
+        private TranslateTransform _moveTransform;
+        private ScaleTransform ScaleTransform;
         double _zoom = 0;
-        private Brush Active { get; set; }
-        private Brush Passive { get; set; }
-        private Brush Bus { get; set; }
-        private Dictionary<int, Ellipse> BusStopPositions { get; set; }
-        private Ellipse? BusPosition { get; set; }
         private bool _isWindowFixed = false;
         private bool _isGameInjected = false;
-        private GameMemoryReader? GameMemoryReader { get; set; }
+        private MapRenderer _mapRenderer;
 
         public MapWindow(string mapFolderPath)
         {
             InitializeComponent();
 
-            MapData = new(mapFolderPath);
-            Active = Brushes.Red;
-            Passive = Brushes.Green;
-            Bus = Brushes.Blue;
-            BusStopPositions = new Dictionary<int, Ellipse>();
+            try
+            {
+                _mapData = new(mapFolderPath);
+            }
+            catch 
+            {
+                throw new Exception("Generate roadmap please! Check if the map folder is correct!");   
+            }
 
-            LoadMapBmp();
-            DrawBusStops();
-            
-            MoveTransform = new TranslateTransform();
+            _moveTransform = new TranslateTransform();
             ScaleTransform = new ScaleTransform();
-            // Empty for now
             SetupMapMovement();
 
             this.Width = 800;
             this.Height = 800;
+
+            _mapRenderer = new(this.MapBackground, this.MapCanvas, this.BusStopsLayer, _mapData);
         }
-
-        /// <summary>
-        /// Loads Current Map background image
-        /// </summary>
-        private void LoadMapBmp()
-        {
-            MapBackground.Source = MapData.BackgroundMapImg;
-            this.Width = MapData.BackgroundMapImg.Width;
-            this.Height = MapData.BackgroundMapImg.Height;
-            MapBackground.Width = MapData.BackgroundMapImg.Width;
-            MapBackground.Height = MapData.BackgroundMapImg.Height;
-        }
-
-        /// <summary>
-        /// Draw all bus stops during initialisation
-        /// </summary>
-        private void DrawBusStops()
-        {
-            foreach (KeyValuePair<int, BusStop> busStop in MapData.BusStops)
-            {
-                Ellipse busStopCircle = new()
-                {
-                    Width = 10,
-                    Height = 10,
-                    Stroke = Passive,       
-                    StrokeThickness = 2,
-                    Fill = Brushes.Transparent                   
-                };
-
-                Canvas.SetLeft(busStopCircle, busStop.Value.LocalX - 5); // Hardcode to insure more accurate display position
-                Canvas.SetTop(busStopCircle, busStop.Value.LocalY - 5);
-
-                BusStopsLayer.Children.Add(busStopCircle);
-                BusStopPositions.Add(busStop.Key, busStopCircle);
-            }
-
-            Ellipse busCircle = new()
-            {
-                Width = 8,
-                Height = 8,
-                Stroke = Bus,
-                StrokeThickness = 2,
-                Fill = Bus 
-            };
-
-            Canvas.SetLeft(busCircle, 0); // Spawn bus circle out of bounds
-            Canvas.SetTop(busCircle, 0);
-            busCircle.Visibility = Visibility.Collapsed;
-
-            BusStopsLayer.Children.Add(busCircle);
-            BusPosition = busCircle;
-                    }
 
         /// <summary>
         /// Initialises Map movement variables
@@ -121,11 +65,11 @@ namespace OMSI_RouteAdvisor.Views
         {
             ScaleTransform = new ScaleTransform(1.0, 1.0);
             _zoom = ScaleTransform.ScaleX;
-            MoveTransform = new TranslateTransform();
+            _moveTransform = new TranslateTransform();
 
             TransformGroup group = new TransformGroup();
             group.Children.Add(ScaleTransform);
-            group.Children.Add(MoveTransform);
+            group.Children.Add(_moveTransform);
 
             MapCanvas.RenderTransform = group;
         }
@@ -161,7 +105,7 @@ namespace OMSI_RouteAdvisor.Views
                 ChangeWindowZ.MakeTopmost(this);
             } else
             {
-                this.ResizeMode= ResizeMode.CanResize;
+                this.ResizeMode= ResizeMode.CanResizeWithGrip;
                 WindowBorder.BorderThickness = new Thickness(20);
                 ChangeWindowZ.RevertTopmost(this);
             }
@@ -180,7 +124,7 @@ namespace OMSI_RouteAdvisor.Views
             {
                 try
                 {
-                    GameMemoryReader = new GameMemoryReader();
+                    _mapRenderer.InjectGame();    
                 }
                 catch
                 {
@@ -189,16 +133,16 @@ namespace OMSI_RouteAdvisor.Views
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
                     _isGameInjected = false;
-                    BusPosition.Visibility = Visibility.Collapsed;
+                    _mapRenderer.SetBusPositionVisible(false);
                     InjectGameCheckbox.IsChecked = false;
                     return;
                 }
 
-                BusPosition.Visibility= Visibility.Visible;
+                _mapRenderer.SetBusPositionVisible();
                 StartUpdateLoop();
             } else
             {
-                BusPosition.Visibility = Visibility.Collapsed;
+                _mapRenderer.SetBusPositionVisible(false);
             }
                 
         }
@@ -228,7 +172,6 @@ namespace OMSI_RouteAdvisor.Views
                 this.DragMove();
         }
 
-        // TODO: Try separating Updating logic from Window logic
         /// <summary>
         /// Starts Update loop to read the Game Memory
         /// </summary>
@@ -236,50 +179,13 @@ namespace OMSI_RouteAdvisor.Views
         {
             while (_isGameInjected)
             {
-                UpdateBusPosition();
-                UpdateNextStop();
+                _mapRenderer.UpdateNextStop();
+                double busX, busY;
+                (busX, busY) = _mapRenderer.GetAndUpdateBusPosition();
+                CenterMap(busX, busY);
 
                 await Task.Delay(1000);
             }
-        }
-
-        /// <summary>
-        /// Updates Next Stop position
-        /// </summary>
-        private void UpdateNextStop()
-        {
-            int id = GameMemoryReader!.GetNextBusStopId();
-            if (id == 0 || GameMemoryReader.PreviousBusStopId == id)
-                return;
-
-            if (!BusStopPositions.TryGetValue(id, out var _))
-                return;
-
-            BusStopPositions[id].Stroke = Active;
-            BusStopPositions[id].Fill = Active;
-
-            try
-            {
-                BusStopPositions[GameMemoryReader.PreviousBusStopId].Stroke = Passive;
-                BusStopPositions[GameMemoryReader.PreviousBusStopId].Fill = Brushes.Transparent;
-            }
-            catch { }
-
-            GameMemoryReader.PreviousBusStopId = id;
-        }
-
-        /// <summary>
-        /// Updates current Bus Position
-        /// </summary>
-        private void UpdateBusPosition()
-        {
-            double busX, busY;
-            (busX, busY) = GameMemoryReader!.GetCurrentBusPosition(MapData);
-
-            Canvas.SetLeft(BusPosition, busX - 5);
-            Canvas.SetTop(BusPosition, busY - 5);
-
-            CenterMap(busX, busY);
         }
 
         /// <summary>
@@ -287,8 +193,8 @@ namespace OMSI_RouteAdvisor.Views
         /// </summary>
         private void CenterMap(double x, double y)
         {
-            MoveTransform.X = (this.ActualWidth / 2) - (x * _zoom);
-            MoveTransform.Y = (this.ActualHeight / 2) - (y * _zoom);
+            _moveTransform.X = (this.ActualWidth / 2) - (x * _zoom);
+            _moveTransform.Y = (this.ActualHeight / 2) - (y * _zoom);
         }
     }
 }

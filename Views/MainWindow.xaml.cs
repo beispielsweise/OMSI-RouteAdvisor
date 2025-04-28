@@ -38,10 +38,18 @@ namespace OMSI_RouteAdvisor.Views
             {
                 string selectedMapPath = dialogFolder.SelectedPath;
 
-                MapWindow mapWindow = new MapWindow(selectedMapPath);
-                mapWindow.Show();
-
-                this.Close();
+                try
+                {
+                    MapWindow mapWindow = new MapWindow(selectedMapPath);
+                    mapWindow.Show();
+                    this.Close();
+                } catch
+                {
+                    System.Windows.MessageBox.Show("Make sure to generate roadmap first. Choose a correct folder!",
+                                           "Warning",
+                                           MessageBoxButton.OK,
+                                           MessageBoxImage.Error);
+                }
             }
         }
     }

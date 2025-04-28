@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace OMSI_RouteAdvisor.Readers
 {
@@ -93,9 +94,33 @@ namespace OMSI_RouteAdvisor.Readers
                 }
             }
 
+            // Barebones way of asking for latitude. I don't like it, but this stays for now
+            // TODO: Prettify
             if (isUsingRWC)
             {
-                double tileSize = CountTileSizeFromRWC();
+                double latitude = 52.2;
+                bool validInput = false;
+
+                while (!validInput)
+                {
+                    try
+                    {
+                        string input = Microsoft.VisualBasic.Interaction.InputBox("Enter a latitude value:", "Input Needed", "0.0");
+                        latitude = double.Parse(input);
+                        validInput = true;
+                    }
+                    catch
+                    {
+                        System.Windows.MessageBox.Show(
+                            "Invalid input. Please enter a valid number.",
+                            "Warning",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Error
+                        );
+                    }
+                }
+
+                double tileSize = CountTileSizeFromRWC(latitude);
                 mapData.TileSize = tileSize;
             } else
             {
@@ -108,7 +133,7 @@ namespace OMSI_RouteAdvisor.Readers
         /// </summary>
         /// <param name="mapLatitude">Current map latitude</param>
         /// <returns>New tile size</returns>
-        private static double CountTileSizeFromRWC(double mapLatitude = 52.5) // TODO: User inputs the latitude
+        private static double CountTileSizeFromRWC(double mapLatitude)
         {
             const double EarthRadius = 6378137.0; // in meters (WGS84)
             const double EarthCircum = 2 * Math.PI * EarthRadius; // Earth's circumference
