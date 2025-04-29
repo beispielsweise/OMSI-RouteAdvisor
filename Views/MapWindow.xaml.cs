@@ -55,7 +55,7 @@ namespace OMSI_RouteAdvisor.Views
             this.Width = 800;
             this.Height = 800;
 
-            _mapRenderer = new(this.MapBackground, this.MapCanvas, this.BusStopsLayer, _mapData);
+            _mapRenderer = new(this.MapBackground, this.MapCanvas, this.BusStopsLayer, this.DirectionArrow, this.ArrowRotation, _mapData);
         }
 
         /// <summary>
@@ -133,17 +133,18 @@ namespace OMSI_RouteAdvisor.Views
                         MessageBoxButton.OK,
                         MessageBoxImage.Error);
                     _isGameInjected = false;
-                    _mapRenderer.SetBusPositionVisible(false);
                     InjectGameCheckbox.IsChecked = false;
                     return;
                 }
 
                 _mapRenderer.SetBusPositionVisible();
+                _mapRenderer.SetDirectionArrowVisible();
                 StartUpdateLoop();
             } else
             {
                 _mapRenderer.DisableBusStopHighlighting();
                 _mapRenderer.SetBusPositionVisible(false);
+                _mapRenderer.SetDirectionArrowVisible(false);
             }
                 
         }
@@ -180,9 +181,11 @@ namespace OMSI_RouteAdvisor.Views
         {
             while (_isGameInjected)
             {
-                _mapRenderer.UpdateNextStop();
                 double busX, busY;
                 (busX, busY) = _mapRenderer.GetAndUpdateBusPosition();
+                int nextBusStopId = _mapRenderer.UpdateNextStop();
+                _mapRenderer.UpdateDirectionArrow(nextBusStopId, busX, busY);
+
                 CenterMap(busX, busY);
 
                 await Task.Delay(1000);

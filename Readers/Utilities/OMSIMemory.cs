@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 namespace OMSI_RouteAdvisor.Readers.Utilities
 {
     /// <summary>
-    /// Holds all importand OMSI 2 Base offsets (...B) and Pointeroffsets (...P)
+    /// Holds all importand OMSI 2 Base offsets (...B) and Pointeroffsets (...P) 
+    /// Usable for OMSI 2 Patch 2.3.004 
     /// </summary>
     internal class OMSIMemory
     {

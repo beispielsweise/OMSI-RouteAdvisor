@@ -45,7 +45,7 @@ namespace OMSI_RouteAdvisor.Views
                     this.Close();
                 } catch
                 {
-                    System.Windows.MessageBox.Show("Make sure to generate roadmap first. Choose a correct folder!",
+                    System.Windows.MessageBox.Show("Cannot load the map. Make sure to generate roadmap first. Wrong folder?",
                                            "Warning",
                                            MessageBoxButton.OK,
                                            MessageBoxImage.Error);

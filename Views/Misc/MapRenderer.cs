@@ -23,6 +23,8 @@ namespace OMSI_RouteAdvisor.Views.Misc
         private readonly System.Windows.Controls.Image _mapBackground;
         private readonly Canvas _mapCanvas;
         private readonly Canvas _busStopsLayer;
+        private readonly Canvas _directionArrow;
+        private readonly RotateTransform _directionArrowRotation;
         private readonly Dictionary<int, Ellipse> _busStopPositions;
         private Ellipse _busPosition;
         private GameMemoryReader? _gameMemoryReader;
@@ -35,11 +37,15 @@ namespace OMSI_RouteAdvisor.Views.Misc
         internal MapRenderer(System.Windows.Controls.Image mapBackground,
             Canvas mapCanvas,
             Canvas busStopsLayer,
+            Canvas directionArrow,
+            RotateTransform directionArrowRotation,
             MapData mapData)
         {
             _mapBackground = mapBackground;
             _mapCanvas = mapCanvas;
             _busStopsLayer = busStopsLayer;
+            _directionArrow = directionArrow;
+            _directionArrowRotation = directionArrowRotation;
             _busStopPositions = [];
             _busPosition = new();
             _mapData = mapData;
@@ -122,28 +128,27 @@ namespace OMSI_RouteAdvisor.Views.Misc
         /// <summary>
         /// Updates Next Stop position
         /// </summary>
-        public void UpdateNextStop()
+        public int UpdateNextStop()
         {
             int id = _gameMemoryReader!.GetNextBusStopId();
             if (id == 0 || _gameMemoryReader.PreviousBusStopId == id)
-                return;
+                return id;
 
             if (!_busStopPositions.TryGetValue(id, out var _))
-                return;
+                return id;
 
             _busStopPositions[id].Stroke = _active;
             _busStopPositions[id].Fill = _active;
             System.Windows.Controls.Panel.SetZIndex(_busStopPositions[id], 10);
 
-            try
-            {
-                _busStopPositions[_gameMemoryReader.PreviousBusStopId].Stroke = _passive;
-                _busStopPositions[_gameMemoryReader.PreviousBusStopId].Fill = Brushes.Transparent;
+            if (_busStopPositions.TryGetValue(_gameMemoryReader.PreviousBusStopId, out var busStop)) {
+                busStop.Stroke = _passive;
+                busStop.Fill = Brushes.Transparent;
                 System.Windows.Controls.Panel.SetZIndex(_busStopPositions[_gameMemoryReader.PreviousBusStopId], 0);
             }
-            catch { }
 
             _gameMemoryReader.PreviousBusStopId = id;
+            return id;
         }
 
         /// <summary>
@@ -160,17 +165,29 @@ namespace OMSI_RouteAdvisor.Views.Misc
             return (busX, busY);
         }
 
+        public void UpdateDirectionArrow(int nextBusStopId, double busX, double busY)
+        {
+            if (!_mapData.BusStops.TryGetValue(nextBusStopId, out var busStop)) {
+                return;
+            }
+
+            double deltaX = busStop.LocalX - busX;
+            double deltaY = busStop.LocalY - busY;
+            double angle = Math.Atan2(deltaY, deltaX) * (180.0 / Math.PI);
+            angle = angle + 90;
+
+            _directionArrowRotation.Angle = angle;
+        }
+
         /// <summary> 
         /// Disables the current bus stop highlighting 
         /// </summary>
         public void DisableBusStopHighlighting()
         {
-            try
-            {
-                _busStopPositions[_gameMemoryReader!.PreviousBusStopId].Stroke = _passive;
-                _busStopPositions[_gameMemoryReader.PreviousBusStopId].Fill = Brushes.Transparent;
+            if (_busStopPositions.TryGetValue(_gameMemoryReader!.PreviousBusStopId, out var busStop)) {
+                busStop.Stroke = _passive;
+                busStop.Fill = Brushes.Transparent;
             }
-            catch { }
         }
 
         /// <summary>
@@ -186,6 +203,21 @@ namespace OMSI_RouteAdvisor.Views.Misc
             }
             
             _busPosition.Visibility = Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Sets DirectionArrow Visibility
+        /// </summary>
+        /// <param name="visible">Default true, element visible. False will set the element invisible</param>
+        public void SetDirectionArrowVisible(bool visible = true)
+        {
+            if (!visible)
+            {
+                _directionArrow.Visibility = Visibility.Hidden;
+                return;
+            }
+
+            _directionArrow.Visibility = Visibility.Visible;
         }
     }
 }

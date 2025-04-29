@@ -47,7 +47,11 @@ namespace OMSI_RouteAdvisor.Map
 
             BusStops = new Dictionary<int, BusStop>();
 
-            MapDataReader.ScanGlobalTiles(this);
+            try
+            {
+                MapDataReader.ScanGlobalTiles(this);
+            }
+            catch { throw new Exception("No global.cfg file"); }
             MapDataReader.CheckTileSize(this);
 
             (double minX, double minY, double maxX, double maxY) = CoordinatesConverter.GetGridMinMaxValues(this);

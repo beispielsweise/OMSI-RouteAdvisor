@@ -18,7 +18,12 @@ namespace OMSI_RouteAdvisor.Readers
         /// <param name="mapData"></param>
         public static void ScanGlobalTiles(MapData mapData)
         {
-            string[] lines = File.ReadAllLines(mapData.MapFolderPath+ "\\global.cfg");
+            string[] lines; 
+            try
+            {
+                lines = File.ReadAllLines(mapData.MapFolderPath + "\\global.cfg");
+            }
+            catch { return; }
 
             for (int i = 0; i < lines.Length; i++)
             {

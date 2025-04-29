@@ -20,20 +20,41 @@
         <Grid x:Name="RootGrid" Grid.Row="0">
             <Canvas x:Name="MapCanvas">
                 <Image x:Name="MapBackground" />
-                <Canvas x:Name="BusStopsLayer" IsHitTestVisible="False" />
+                <Canvas x:Name="BusStopsLayer" IsHitTestVisible="False"/>
             </Canvas>
         </Grid>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,21,0,29" Background="White" >
+        <Grid Grid.Row="1" >
+            <Canvas x:Name="DirectionArrow" IsHitTestVisible="False" HorizontalAlignment="Left" Visibility="Collapsed"
+                    Width="20"
+                    Margin="30,-30,0,80" RenderTransformOrigin="0.5, 0.5">
+                <Canvas.RenderTransform>
+                    <RotateTransform x:Name="ArrowRotation" Angle="0"/>
+                </Canvas.RenderTransform>
+                <!-- Shaft -->
+                <Line x:Name="ArrowShaft"
+        X1="10" Y1="25" X2="10" Y2="0"
+        Stroke="Red"
+        StrokeThickness="10"
+        RenderTransformOrigin="0.5,0.5">
+                </Line>
+
+                <!-- Head -->
+                <Polygon x:Name="ArrowHead"
+        Points="0,0, 20,0, 10,-20"
+        Fill="Red"
+        RenderTransformOrigin="0.5,1">
+                </Polygon>
+            </Canvas>
+        </Grid>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,21,0,29" Background="White" >
             <CheckBox x:Name="FixWindowPositionCheckbox" Content="Fixed" Click="FixWindowPositionCheckbox_Click" Width="52" Height="16"/>
             <Slider x:Name="MapZoomSlider" Minimum="0.5" Maximum="2.0" Value="1.0" Width="100" ValueChanged="MapZoomSlider_ValueChanged" Height="18"/>
             <Button x:Name="CloseMapButton" Content="Close" Click="CloseMapButton_Click" Width="39" Height="25" />
             <CheckBox x:Name="InjectGameCheckbox" Content="Inject" Click="InjectGameCheckbox_Click" Height="15" Width="54" Margin="10, 0, 0, 0"></CheckBox>
         </StackPanel>
-
-        <Grid Grid.Row="2" MouseLeftButtonDown="WindowBorder_MouseLeftButtonDown">
+        <Grid Grid.Row="3" MouseLeftButtonDown="WindowBorder_MouseLeftButtonDown">
             <Border x:Name="WindowBorder" BorderBrush="White" VerticalAlignment="Top" BorderThickness="50" CornerRadius="0" Margin="0,48,0,0" Height="28"  Background="Transparent"></Border>
         </Grid>
-
     </Grid>
 </Window>

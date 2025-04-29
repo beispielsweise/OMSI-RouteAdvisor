@@ -34,7 +34,7 @@ namespace OMSI_RouteAdvisor.Readers
                 throw new Exception("Please open the game first");
             }
 
-            PreviousBusStopId = -1;
+            PreviousBusStopId = 0;
         }
 
         /// <summary>
