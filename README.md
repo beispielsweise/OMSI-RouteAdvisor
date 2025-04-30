@@ -6,6 +6,11 @@ A custom navigator app for OMSI 2 Patch 2.3.004 (latest as of 28.04.2025)
 - Bus position tracking
 - Updating the next stop on the route
 
+Currently working on maps: 
+- Grundorf
+- Berlin-Spandau
+- Hafencity 
+
 ## Installation
 1. Download the latest release
 2. Unpack .rar file, run the .exe and enjoy!
