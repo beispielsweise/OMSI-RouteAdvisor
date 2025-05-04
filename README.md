@@ -1,5 +1,6 @@
 # OMSI RouteAdvisor
 A custom navigator app for OMSI 2 Patch 2.3.004 (latest as of 28.04.2025)
+No more updates.
 
 ## Features
 - Open any OMSI 2 map and display it with Bus stops on it!
@@ -10,6 +11,7 @@ Currently working on maps:
 - Grundorf
 - Berlin-Spandau
 - Hafencity 
+- Should work on any map, that has a generatable roadmap and does not have Latitude value. Latutide can still work, but is inconsistent
 
 ## Installation
 1. Download the latest release
@@ -35,11 +37,6 @@ You can try running any map without whole.roadmap generated. The navigator will 
 
 ## Technologies Used
 - C# WPF
-
-## Future plans:
-- Display current Bus Line
-- Pleasant ui
-- WIP
 
 ## License
 MIT License
