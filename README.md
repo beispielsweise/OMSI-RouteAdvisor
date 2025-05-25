@@ -1,6 +1,5 @@
-# OMSI RouteAdvisor
+## OMSI RouteAdvisor (Abandoned)
 A custom navigator app for OMSI 2 Patch 2.3.004 (latest as of 28.04.2025)
-No more updates.
 
 ## Features
 - Open any OMSI 2 map and display it with Bus stops on it!
