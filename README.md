@@ -30,9 +30,8 @@ As of now, you need to unfortunately enter the latitude every time, sorry
 
 ## WARNING
 Maps, that are not allowing for Roadmap to be generated (Insufficient RAM error) ARE NOT SUPPORTED. Here's a list of maps, which currently don't work.
-- GLADBECK. If you try to load it, BEWARE that the map will take up 3.6 GB of your RAM. Do this at your own risk.
-- ...
-You can try running any map without whole.roadmap generated. The navigator will try to get pieces of map and put them together. It should work, if they were generated correctly, however do this at your own risk. In this case, I assume it should work, as I have tested it. But beware of high RAM usage.
+- Gladbeck.
+- Achen (Incorrect bus stops locations)
 
 ## Technologies Used
 - C# WPF
