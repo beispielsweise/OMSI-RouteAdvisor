@@ -1,4 +1,4 @@
-## OMSI RouteAdvisor (Abandoned)
+## OMSI RouteAdvisor
 A custom navigator app for OMSI 2 Patch 2.3.004 (latest as of 28.04.2025)
 
 ## Features
