@@ -85,9 +85,19 @@ namespace OMSI_RouteAdvisor.Readers
         /// Default: 300 by 300
         /// </summary>
         /// <param name="mapData"></param>
-        public static void CheckTileSize(MapData mapData)
+        public static int CheckTileSize(string mapFolderPath)
         {
-            string[] lines = File.ReadAllLines(mapData.MapFolderPath + "\\global.cfg");
+
+            string[] lines;
+            try
+            {
+
+                lines = File.ReadAllLines(mapFolderPath + "\\global.cfg");
+            }
+            catch
+            {
+                return 0;
+            }
 
             bool isUsingRWC = false;
             for (int i = 0; i < lines.Length; i++)
@@ -101,36 +111,34 @@ namespace OMSI_RouteAdvisor.Readers
 
             // Barebones way of asking for latitude. I don't like it, but this stays for now
             // TODO: Prettify
-            if (isUsingRWC)
-            {
-                double latitude = 52.2;
-                bool validInput = false;
+            if (!isUsingRWC)
+                return 300;
 
-                while (!validInput)
+            double latitude = 52.2;
+            bool validInput = false;
+
+            while (!validInput)
+            {
+                try
                 {
-                    try
-                    {
-                        string input = Microsoft.VisualBasic.Interaction.InputBox("Enter a latitude value:", "Input Needed", "0.0");
-                        latitude = double.Parse(input);
-                        validInput = true;
-                    }
-                    catch
-                    {
-                        System.Windows.MessageBox.Show(
-                            "Invalid input. Please enter a valid number.",
-                            "Warning",
-                            MessageBoxButton.OK,
-                            MessageBoxImage.Error
-                        );
-                    }
+                    string input = Microsoft.VisualBasic.Interaction.InputBox("Enter a latitude value:", "Input Needed", "0.0");
+                    input = input.Replace('.', ',');
+                    latitude = double.Parse(input);
+                    validInput = true;
                 }
-
-                double tileSize = CountTileSizeFromRWC(latitude);
-                mapData.TileSize = tileSize;
-            } else
-            {
-                mapData.TileSize = 300;
+                catch
+                {
+                    System.Windows.MessageBox.Show(
+                        "Invalid input. Please enter a valid number.",
+                        "Warning",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
+                }
             }
+
+            double tileSize = CountTileSizeFromRWC(latitude);
+            return (int)tileSize;
         }
 
         /// <summary>

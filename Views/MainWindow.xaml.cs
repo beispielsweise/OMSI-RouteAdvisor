@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OMSI_RouteAdvisor.Readers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -31,6 +32,8 @@ namespace OMSI_RouteAdvisor.Views
         /// <param name="e"></param>
         private void ChooseMapFolderBtn_Click(object sender, RoutedEventArgs e)
         {
+            ChangeStatusVisibility(true);
+
             var dialogFolder = new System.Windows.Forms.FolderBrowserDialog();
             var result = dialogFolder.ShowDialog();
 
@@ -50,7 +53,50 @@ namespace OMSI_RouteAdvisor.Views
                                            MessageBoxButton.OK,
                                            MessageBoxImage.Error);
                 }
+                finally
+                {
+                    ChangeStatusVisibility(false);
+                }
             }
+        }
+        private void ChooseMapFolderBtn2_Click(object sender, RoutedEventArgs e)
+        {
+            ChangeStatusVisibility(true);
+
+            var dialogFolder = new System.Windows.Forms.FolderBrowserDialog();
+            var result = dialogFolder.ShowDialog();
+
+            if (result == System.Windows.Forms.DialogResult.OK)
+            {
+                string selectedMapPath = dialogFolder.SelectedPath;
+               
+                try
+                {
+                    MapImageReader.GenerateRoadmap(selectedMapPath);
+                } catch
+                {
+                    System.Windows.MessageBox.Show("Wasn't able to generate roadmap. Wrong folder?",
+                                           "Warning",
+                                           MessageBoxButton.OK,
+                                           MessageBoxImage.Error);
+                }
+                finally
+                {
+                    ChangeStatusVisibility(false);
+                }
+            }
+        }
+
+        private void ChangeStatusVisibility(bool isVisible)
+        {
+            if (isVisible)
+            {
+                StatusLabel.Visibility = Visibility.Visible;
+                StatusLabel.UpdateLayout();
+                return;
+            }
+            StatusLabel.Visibility = Visibility.Collapsed;
+            StatusLabel.UpdateLayout();
         }
     }
 }

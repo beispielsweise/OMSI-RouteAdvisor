@@ -33,6 +33,13 @@ namespace OMSI_RouteAdvisor.Map
             MapFolderPath = mapFolderPath;
 
             Tiles = new Dictionary<int, Tile>();
+            BusStops = new Dictionary<int, BusStop>();
+
+            try
+            {
+                MapDataReader.ScanGlobalTiles(this);
+            }
+            catch { throw new Exception("No global.cfg file"); }
 
             BitmapSource backgroundMapImg;
             try
@@ -45,15 +52,11 @@ namespace OMSI_RouteAdvisor.Map
             backgroundMapImg = ImageModifier.MakeTransparent(backgroundMapImg);
             BackgroundMapImg = backgroundMapImg;
 
-            BusStops = new Dictionary<int, BusStop>();
-
             try
             {
-                MapDataReader.ScanGlobalTiles(this);
+                TileSize = MapDataReader.CheckTileSize(this.MapFolderPath);
             }
-            catch { throw new Exception("No global.cfg file"); }
-            MapDataReader.CheckTileSize(this);
-
+            catch {};
             (double minX, double minY, double maxX, double maxY) = CoordinatesConverter.GetGridMinMaxValues(this);
             MinGridX = minX;
             MinGridY = minY;
@@ -65,6 +68,36 @@ namespace OMSI_RouteAdvisor.Map
             double scaleFactor = CoordinatesConverter.GetScaleFactor(this);
             ScaleFactor = scaleFactor;
             CoordinatesConverter.BusStopsToLocal(this);
+        }
+
+        public MapData(string mapFolderPath, bool forImageGeneration = true)
+        {
+            MapFolderPath = mapFolderPath;
+
+            Tiles = new Dictionary<int, Tile>();
+            BusStops = new Dictionary<int, BusStop>(); // empty
+            BackgroundMapImg = new BitmapImage(); // empty
+
+            try
+            {
+                MapDataReader.ScanGlobalTiles(this);
+            }
+            catch { throw new Exception("No global.cfg file"); }
+
+            try
+            {
+                TileSize = MapDataReader.CheckTileSize(this.MapFolderPath);
+            }
+            catch { throw new Exception("You shouldn't see this..."); }
+
+            (double minX, double minY, double maxX, double maxY) = CoordinatesConverter.GetGridMinMaxValues(this);
+            MinGridX = minX;
+            MinGridY = minY;
+            MaxGridX = maxX;
+            MaxGridY = maxY;
+            (double worldWidth, double worldHeight) = CoordinatesConverter.GetWorldSize(this);
+            WorldWidth = worldWidth;
+            WorldHeight = worldHeight;
         }
     }
 }
